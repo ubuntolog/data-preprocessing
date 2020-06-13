@@ -1,26 +1,19 @@
-import requests;
-import re;
-import json;
-import time;
-import logging;
-import time
-import os
+import requests, re, json, time, logging, os, sys
 from datetime import datetime
 
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-DATA_LOCATION = "/Users/minialex/Storage/pics/"
 MAX_RESULT = 1000
 
-def search(keywords, class_name, max_results=None):
-    os.mkdir(DATA_LOCATION + class_name)
+def search(keywords, class_name, out):
+    os.mkdir(out + class_name)
     url = 'https://duckduckgo.com/'
     params = {
     	'q': keywords
     }
 
-    logger.debug("Hitting DuckDuckGo for Token")
+    logger.debug("Getting a Token")
 
     #   First make a request to above URL, and parse out the 'vqd'
     #   This is a special token, which should be used in the subsequent request
@@ -67,6 +60,7 @@ def search(keywords, class_name, max_results=None):
                 
                 break
             except ValueError as e:
+                logger.error(e)
                 logger.debug("Hitting Url Failure - Sleep and Retry: %s", requestUrl)
                 time.sleep(5)
                 continue
@@ -75,7 +69,7 @@ def search(keywords, class_name, max_results=None):
         # print(len(data["results"]))
         # # date_time = datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
         # print("date and time:",date_time)	
-        printJson(data["results"], class_name, counter)
+        printJson(data["results"], class_name, counter, out)
         counter = counter + len(data["results"])
        
 
@@ -85,7 +79,7 @@ def search(keywords, class_name, max_results=None):
 
         requestUrl = url + data["next"]
 
-def printJson(objs, subfolder, counter):
+def printJson(objs, subfolder, counter, out):
     for obj in objs:
         counter = counter + 1
         print ("Width {0}, Height {1}".format(obj["width"], obj["height"]))
@@ -103,22 +97,21 @@ def printJson(objs, subfolder, counter):
             if (len(extra_chars)>0):
                 extension = file_name[-1].split("?", 1)[0]
 
-            saveImage(obj, str(counter), extension, subfolder)
-            # time.sleep(0.1)
+            saveImage(obj, str(counter), extension, subfolder, out)
 
         if (int(counter)>MAX_RESULT):
-            exit(0)
+            sys.exit("Image number limit has been reached")
 
 
 
 
-def saveImage(obj, out_name, out_extension, subfolder):    
+def saveImage(obj, out_name, out_extension, subfolder, out):    
     img_link = obj['image']
 
     try:
         img_data = requests.get(img_link, timeout=5).content
         
-        filename = DATA_LOCATION + subfolder + "/" + out_name + "." + out_extension
+        filename = out + subfolder + "/" + out_name + "." + out_extension
         try:
             with open(filename, 'wb+') as f:
                 f.write(img_data)
@@ -126,29 +119,24 @@ def saveImage(obj, out_name, out_extension, subfolder):
             print("Cannot save an image")
 
         print("File " + filename + " successfully downloaded")
-    except requests.exceptions.RequestException as e:  # This is the correct syntax
+    except requests.exceptions.RequestException as e:
         print(e)
 
-   
-
-  
-   
-        
-
 if __name__ == '__main__':
-# while True:
-    # keyword = input('Enter the search keyword : ')
-    # # print(keyword)
-    # search(keyword)
+    print ('Number of arguments:', len(sys.argv), 'arguments.')
+    print ('Argument List:', str(sys.argv))
+    if len(sys.argv) < 2:
+        print ("Arg #1: output folder")
+        sys.exit("Looks like you did not specify the destination folder")        
+
+    data_out = sys.argv[1]
+  
 
     food = [ 
-        ["penne", "penne"],
-        ["shashlik", "shashlik"],
-        ["heineken bottle", "heineken_bottle"],
-        ["beks bottle", "beks_bottle"],
-       
+        ["olive oil", "olive_oil"],
+        ["fried meat", "fried meat"]
     ]
 
     for f in food:
         print(f[0], f[1])    
-        search(f[0], f[1], 100)
+        search(f[0], f[1], data_out)

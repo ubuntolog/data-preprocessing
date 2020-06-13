@@ -13,6 +13,7 @@ if __name__ == '__main__':
     only_folders = utils.get_folder_list(data_src)
     folder_num = len(only_folders)
     counter = 0
+    removed_files_num = 0
     for folder in only_folders:
         counter += 1
         print(counter, "/", folder_num, " current folder: ", folder)
@@ -42,11 +43,12 @@ if __name__ == '__main__':
 
         print("Need to remove ", len(to_be_removed), " out of ", folder_file_num)
         for filename in to_be_removed:
-            print("Removing: ", filename)
             utils.remove_file(filename)
+            removed_files_num += 1
         
         print("")
         print("")
 
     print("")
+    print("Number of removed files: ", removed_files_num)
     print("Number of processed folders: ", folder_num)

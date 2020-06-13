@@ -8,4 +8,4 @@ A Python script to search for images on https://duckduckgo.com/. It accespts a s
 A script that creates training and test datasets from a single folder with image files
 
 ## remove_duplicate_images.py
-Identifies and removed identical or corrupted images in a given folder
+Identifies and removes identical or corrupted images in a given folder
